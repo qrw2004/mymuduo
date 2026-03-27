@@ -1,0 +1,26 @@
+# ================= CMake 构建目录 =================
+build/
+cmake-build-debug/
+cmake-build-release/
+
+# ================= 编译产物 =================
+lib/
+bin/
+*.o
+*.so
+*.a
+*.out
+*.exe
+
+# ================= 自动生成的配置文件 =================
+CMakeCache.txt
+Makefile
+compile_commands.json
+
+# ================= 临时文件和备份 =================
+temp/
+*.swp
+*.swo
+*~
+.gitignore.swp
+
