@@ -14,7 +14,7 @@
         logger.setLogLevel(INFO); \
         char buf[1024] = {0}; \
         snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__); \
-        logger.log(buf) \
+        logger.log(buf); \
     }while(0);
 
 #define LOG_ERROR(logmsgFormat, ...) \
@@ -24,17 +24,17 @@
         logger.setLogLevel(ERROR); \
         char buf[1024] = {0}; \
         snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__); \
-        logger.log(buf) \
+        logger.log(buf); \
     }while(0);
 
-#define LOG_FATAL(logmsgFormat, ...) \   
+#define LOG_FATAL(logmsgFormat, ...) \
     do \
     { \
         Logger& logger =  Logger::instance(); \
         logger.setLogLevel(FATAL); \
         char buf[1024] = {0}; \
         snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__); \
-        logger.log(buf) \
+        logger.log(buf); \
     }while(0);
 
 #ifdef MUDEBUG  //如果定义了 MUDEBUG 就输出正常的调试日志的信息
@@ -45,7 +45,7 @@
         logger.setLogLevel(DEBUG); \
         char buf[1024] = {0}; \
         snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__); \
-        logger.log(buf) \
+        logger.log(buf); \
     }while(0);
 #else //如果没定义 什么也不输出
     #define LOG_DEBUG(logmsgFormat, ...)
