@@ -35,6 +35,7 @@
         char buf[1024] = {0}; \
         snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__); \
         logger.log(buf); \
+        exit(-1); \
     }while(0);
 
 #ifdef MUDEBUG  //如果定义了 MUDEBUG 就输出正常的调试日志的信息

@@ -11,6 +11,10 @@ class EventLoop;
 class Timestamp;
 
 /*
+Channel模块是 Reactor 模式 中连接 Demultiplex (多路复用器/epoll) 和 Dispatcher (分发器/EventLoop) 与 Handler (处理器/TcpConnection) 的关键纽带
+*/
+
+/*
 理清楚 EventLoop  Channel  Poller之间的关系   Reactor模型上对应Demultiplex(多路事件分发器)
 
 Channel 理解为通道， 封装了sockfd及其感兴趣的event， 如EPOLLIN  EPOLLOUT事件
@@ -88,7 +92,7 @@ private:
 
     EventLoop *loop_;//事件循环  所属的事件循环指针。每个 Channel 必须属于且仅属于一个 EventLoop（即一个线程）。
     const int fd_;   //poller监听的对象  文件描述符 (File Descriptor) 这是操作系统内核识别 Socket 的 ID
-    int events_;     //注册fd感兴趣的事件
+    int events_;     //注册fd感兴趣的事件(要监听的事件)
     int revents_;    //poller返回的具体发生的事件、实际发生的事件 (Returned Events)   handleEvent 函数就是根据这个值来决定调用哪个回调
     int index_;
     /*在 Poller 中的状态索引。用来标记这个 Channel 当前在 epoll 里的状态：
