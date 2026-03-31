@@ -65,7 +65,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activeChannels)
 //                                 ChannelMap <fd,channel*>   epollfd
 void EPollPoller::updateChannel(Channel* channel)
 {   
-    const int index = channel->index();
+    const int index = channel->index();// 获取 Channel 当前在 poller 中的状态
     LOG_INFO("func=%s  fd=%d \n",__FUNCTION__, channel->fd());
     
     if(index == kNew || index == kDeleted)
@@ -108,17 +108,18 @@ void EPollPoller::removeChannel(Channel* channel)
 
 // 填写活跃的连接
 void EPollPoller::fillActiveChannels(int numEvents, ChannelList* activeChannels) const
+//作用: epoll_wait 返回的是一个 struct epoll_event 数组。这个函数负责遍历数组，把里面的 data.ptr (即 Channel*) 提取出来，填入 activeChannels 列表中，并设置 revents。
 {
     for(int i = 0 ; i < numEvents ; i++)
     {
         Channel* channel = static_cast<Channel*>(events_[i].data.ptr);
-        channel->set_revents(events_[i].events);
+        channel->set_revents(events_[i].events);//告诉 Channel 发生了什么事件 (如 EPOLLIN)
         activeChannels->push_back(channel);  //EventLoop就拿到了它的poller给它返回的所有事件的channel列表了
     }
 }
     
 //更新channel通道  epoll_ctl add/mod/del
-void EPollPoller::update(int op, Channel* channel)
+void EPollPoller:: update(int op, Channel* channel)
 {
 /*
 typedef union epoll_data 
