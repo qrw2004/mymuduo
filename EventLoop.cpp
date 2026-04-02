@@ -3,17 +3,17 @@
 #include "Poller.h"
 #include "Channel.h"
 
-#include <sys.eventfd.h>
+#include <sys/eventfd.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <memory>
 
-//防止一个线程创建多个EventLoop
-__thread EventLoop* t_loopInThisThread = nullptr;
+//防止一个线程创建多个EventLoop   每个线程都有自己独立的一份副本。用来记录当前线程正在运行哪个 EventLoop
+__thread EventLoop* t_loopInThisThread = nullptr;//线程局部存储。确保每个线程只认自己的 Loop
 
 
-//定义默认的Poller  IO复用接口的超时时间
+//定义默认的Poller  IO复用接口的超时时间 10s
 const int kPollTimeMs = 10000;
 
 //创建wakeupfd，用来notify唤醒subReactor处理新来的channel
@@ -29,12 +29,12 @@ int createEventfd()
 
 EventLoop::EventLoop()
     :looping_(false),
-    quit(false),
+    quit_(false),
     callingPendingFunctors_(false),
-    threadId_(CurrentThread::tid()),
+    threadId_(CurrentThread::tid()),//绑定当前线程
     poller_(Poller::newDefaultPoller(this)),
-    wakeupFd_(createEventfd()),
-    wakeupChannel_(new Channel(this, wakeupFd_)), //std::unique_ptr<Channel> wakeupChannel_
+    wakeupFd_(createEventfd()),//调用 createEventfd() 得到 wakeupFd_
+    wakeupChannel_(new Channel(this, wakeupFd_)), //std::unique_ptr<Channel> wakeupChannel_  创建 wakeupChannel_ 监听这个 fd
 {
     LOG_DEBUG("EventLoop created %p in thread %d", this, threadId_);
     if(t_loopInThisThread)//如果该线程已经有了一个Loop,就不创建这个新的Loop了
@@ -73,15 +73,15 @@ void EventLoop::loop()
     while(!quit_)
     {
         activeChannels_.clear();
-        pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
+        pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);//调用 poller_->poll() 阻塞等待事件。
 
-        for(Channel* channel : activeChannels_)
+        for(Channel* channel : activeChannels_)//遍历活跃 Channel 列表，调用 channel->handleEvent() 处理业务
         {
             //poller监听哪些channel发生事件了，然后上报给EventLoop，通知channel处理相应的事件
-            channel->handleEvent(pollReturnTime_)
+            channel->handleEvent(pollReturnTime_);
         }
         //执行当前的EventLoop事件循环需要处理的回调操作
-        doPendingFunct ors();
+        doPendingFunctors();
     }
 
     LOG_INFO("EventLoop %p stop looping. \n", this);
@@ -89,11 +89,11 @@ void EventLoop::loop()
 }
 
 //退出事件循环   1.loop在自己的线程中调用quit  2.在非loop的线程中，调用loop的quit
-void EventLoop::quit()
+void EventLoop::quit()//
 {
     quit_ = true;
 
-    if(!isInLoopThread())
+    if(!isInLoopThread())//如果调用者不在当前 IO 线程，调用 wakeup() 唤醒沉睡的 IO 线程，让它检测到 quit_ 并退出循环
     //如果是在其他线程中调用的quit  在一个subloop(worker)中，调用了mainloop(IO)的quit
     {
         wakeup();
@@ -131,7 +131,7 @@ void EventLoop::queueInLoop(Functor cb)
 }
 
 
-
+//唤醒处理器 清空eventfd计数器，且这是 wakeupChannel_ 被触发的原因
 void EventLoop::handleRead()
 {
     uint64_t one = 1;
@@ -175,7 +175,7 @@ void EventLoop::doPendingFunctors()
 
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        functors.swap(pendingFunctors_);
+        functors.swap(pendingFunctors_);//将共享队列 pendingFunctors_ 与局部变量 functors 交换
     }//出了这个括号锁就释放掉了
     for(const Functor &functor : functors)
     {
