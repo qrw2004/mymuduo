@@ -13,6 +13,6 @@ Poller* Poller::newDefaultPoller(EventLoop* Loop)
     }
     else
     {
-        return new EPollPoller(loop);//生成epoll的实例
+        return new EPollPoller(Loop);//生成epoll的实例
     }
 }

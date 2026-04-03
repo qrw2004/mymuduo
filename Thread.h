@@ -14,14 +14,14 @@ class Thread : noncopyable
 public:
     using ThreadFunc = std::function<void()>;
     
-    explicit Thread(ThreadFunc, const std:: string& name = string());
+    explicit Thread(ThreadFunc, const std:: string& name = std::string());
     ~Thread();
 
     void start();
     void join();
 
-    bool started() const (return started_;)
-    pid_t tid() const (return tid_;)
+    bool started() const {return started_;}
+    pid_t tid() const {return tid_;}
     const std::string& name() const {return name_;}
 
     static int numCreated() {return numCreated_;}

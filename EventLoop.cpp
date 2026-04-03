@@ -34,7 +34,7 @@ EventLoop::EventLoop()
     threadId_(CurrentThread::tid()),//绑定当前线程
     poller_(Poller::newDefaultPoller(this)),
     wakeupFd_(createEventfd()),//调用 createEventfd() 得到 wakeupFd_
-    wakeupChannel_(new Channel(this, wakeupFd_)), //std::unique_ptr<Channel> wakeupChannel_  创建 wakeupChannel_ 监听这个 fd
+    wakeupChannel_(new Channel(this, wakeupFd_)) //std::unique_ptr<Channel> wakeupChannel_  创建 wakeupChannel_ 监听这个 fd
 {
     LOG_DEBUG("EventLoop created %p in thread %d", this, threadId_);
     if(t_loopInThisThread)//如果该线程已经有了一个Loop,就不创建这个新的Loop了
@@ -58,7 +58,7 @@ EventLoop::~EventLoop()//回收资源
 {
     wakeupChannel_->disableAll();
     wakeupChannel_->remove();
-    ::close(weakupFd_);
+    ::close(wakeupFd_);
     t_loopInThisThread = nullptr;
 }
 
@@ -135,10 +135,10 @@ void EventLoop::queueInLoop(Functor cb)
 void EventLoop::handleRead()
 {
     uint64_t one = 1;
-    ssize_t n = read(weakupFd_, &one, sizeof(one));
+    ssize_t n = read(wakeupFd_, &one, sizeof(one));
     if(n != sizeof(one))
     {
-        LOG_ERROR("EventLoop::handleRead() reads %d bytes instead of 8 \n", n);
+        LOG_ERROR("EventLoop::handleRead() reads %ld bytes instead of 8 \n", n);
     }
 }
 
