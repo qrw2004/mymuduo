@@ -24,7 +24,7 @@ public:
     pid_t tid() const {return tid_;}
     const std::string& name() const {return name_;}
 
-    static int numCreated() {return numCreated_;}
+    static int numCreated() {return numCreated_;}//统计当前进程中总共创建了多少个 Thread 对象
 
 private:
     void setDefaultName();
