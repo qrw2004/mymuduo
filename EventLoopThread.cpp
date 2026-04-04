@@ -3,9 +3,9 @@
 
 #include <memory>
 
- EventLoopThread::EventLoopThread(const ThreadInitCallback &cb = ThreadInitCallback(), const std::string &name = string()):
+ EventLoopThread::EventLoopThread(const ThreadInitCallback &cb, const std::string &name):
      loop_(nullptr),
-     exiting_(flase),
+     exiting_(false),
      thread_(std::bind(&EventLoopThread::threadFunc, this), name),
      mutex_(),
      cond_(),
@@ -19,12 +19,12 @@ EventLoopThread::~EventLoopThread()
     exiting_ = true;
     if(loop_ != nullptr)
     {
-        loop_->quit;
+        loop_->quit();
         thread_.join();
     }
 }
 
-EventLoop* EventLoopThread::startLoop()
+EventLoop* EventLoopThread::startLoop()//得到一个新线程的指针
 {
     thread_.start();//启动底层新线程
 
