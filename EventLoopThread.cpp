@@ -44,7 +44,7 @@ EventLoop* EventLoopThread::startLoop()//得到一个新线程的指针
 //这个方法是在单独的新线程里面运行的
 void EventLoopThread::threadFunc()
 {
-    EventLoop loop;//创建一个独立的eventloop,和上面的线程是一一对应的   one loop per thread
+    EventLoop loop;//创建一个独立的eventloop,和上面的线程是一一对应的   one loop per thread 每个线程一个事件循环
 
     if(callback_)
     {
