@@ -45,9 +45,9 @@ EventLoop* EventLoopThreadPool::getNextLoop()
         next_++;
 
         if(next_ >= loops_.size())
-        (
+        {
             next_ = 0;
-        )
+        }
     }
 
     return loop;
@@ -55,7 +55,7 @@ EventLoop* EventLoopThreadPool::getNextLoop()
 
 std::vector<EventLoop*> EventLoopThreadPool::getAllLoops()
 {
-    if(loops_.empty());
+    if(loops_.empty())
     {
         return std::vector<EventLoop*>(1, baseLoop_);
     }
