@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <strings.h>
 
@@ -14,7 +15,7 @@ Socket::~Socket()
 
 void Socket::bindAddress(const InetAddress& Localaddr)
 {
-    if(::bind(sockfd_, (sockaddr*)localaddr.getSockAddr(), sizeof(sockaddr_in) ) != 0 );
+    if(::bind(sockfd_, (sockaddr*)Localaddr.getSockAddr(), sizeof(sockaddr_in) ) != 0 );
     {
         LOG_FATAL("bind sockfd:%d fail \n", sockfd_);
     }
