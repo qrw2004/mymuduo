@@ -106,6 +106,9 @@ public:
     //从fd上读取数据
     ssize_t readFd(int fd, int* saveErrno);
 
+    //通过fd发送数据
+    ssize_t writeFd(int fd, int* saveErrno);
+
 private:
     char* begin()
     {
