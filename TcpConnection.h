@@ -71,7 +71,10 @@ private:
     void handleClose();
     void handleError();
 
+    void send(const std::string& buf);
     void sendInLoop(const void* message, size_t len);
+
+    //void shutdown();
     void shutdownInLoop();
     
     
@@ -94,6 +97,6 @@ private:
     HighWaterMarkCallback highWaterMarkCallback_;
     size_t highWaterMark_;
 
-    Buffer inputBuffer_;
-    Buffer outputBuffer_;
+    Buffer inputBuffer_; //接收数据的缓冲区
+    Buffer outputBuffer_; //发送数据的缓冲区
 };
