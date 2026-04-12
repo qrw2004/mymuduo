@@ -31,7 +31,7 @@ public:
     bool connected() const {return state_ == kConnected;}
 
     //发送数据
-    void send(const void* message, int len);
+    void send(const std::string& buf);
     //关闭连接
     void shutdown();
 
@@ -71,10 +71,8 @@ private:
     void handleClose();
     void handleError();
 
-    void send(const std::string& buf);
     void sendInLoop(const void* message, size_t len);
 
-    //void shutdown();
     void shutdownInLoop();
     
     
