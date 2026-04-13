@@ -18,7 +18,7 @@ TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::
     loop_(CheckLoopNotNull(loop)),
     ipPort_(listenAddr.toIpPort()),
     name_(nameArg),
-    acceptor_(new Acceptor(loop, listenAddr, option == kReuesPort)),
+    acceptor_(new Acceptor(loop, listenAddr, option == kReusePort)),
     threadPool_(new EventLoopThreadPool(loop, name_)),
     connectionCallback_(),
     messageCallback_(),
@@ -34,7 +34,7 @@ TcpServer::~TcpServer()
     for(auto &item : connections_)
     {
         //这个局部的shared_ptr智能指针对象，出右括号，可以自动释放new出来的TcpConnection对象资源了
-        TcpConnection conn(item.second);
+        TcpConnectionPtr conn = item.second;
         item.second.reset();
 
         //销毁链接
@@ -74,7 +74,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     sockaddr_in local;
     ::bzero(&local, sizeof(local));
     socklen_t addrlen = sizeof(local);
-    if(::getsockname(sockfd, (sockaddr*)local, &addrlen) < 0)
+    if(::getsockname(sockfd, (sockaddr*)&local, &addrlen) < 0)
     {
         LOG_ERROR("sockets::getLocalAddr");
     }
@@ -82,7 +82,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     InetAddress localAddr(local);
 
     //创建连接成功的sockfd，创建TcpConnection连接对象
-    TcpConnectionPtr conn(ioLoop, connName, sockfd, localAddr, peerAddr);
+    TcpConnectionPtr conn(std::make_shared<TcpConnection>(ioLoop, connName, sockfd, localAddr, peerAddr));
 
     connections_[connName] = conn;//std::unordered_map<std::string,TcpConnectionPtr>
 
@@ -95,17 +95,17 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     conn->setCloseCallback(std::bind(&TcpServer::removeConnection, this, std::placeholders::_1));
 
     //直接调用TcpConnection::connectEstablished
-    ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn))
+    ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
 }
 
 void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
-    loop_->runInLoop(std::bind(TcpServer::removeConnectionInLoop, this, conn) );
+    loop_->runInLoop(std::bind(&TcpServer::removeConnectionInLoop, this, conn) );
 }
 
 void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
 {
-    LOG_INFO("TcpServer::removeConnectionInLoop [%s] - connection %s \n",name_.c_str(), conn->name_.c_str());
+    LOG_INFO("TcpServer::removeConnectionInLoop [%s] - connection %s \n",name_.c_str(), conn->name().c_str());
 
     size_t n = connections_.erase(conn->name());
     EventLoop* ioLoop = conn->getLoop();

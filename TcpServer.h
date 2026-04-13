@@ -6,6 +6,7 @@
 #include "noncopyable.h"
 #include "EventLoopThreadPool.h"
 #include "Callbacks.h"
+#include "Channel.h"
 
 #include <functional>
 #include <string>
@@ -21,11 +22,11 @@ public:
 
     enum Option
     {
-        kNoReuesPort,
-        kReuesPort
+        kNoReusePort,
+        kReusePort
     };
 
-    TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string &nameArg, Option option = kNoReuesPort);
+    TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string &nameArg, Option option = kNoReusePort);
 
     ~TcpServer();
 
@@ -33,6 +34,7 @@ public:
     void setConnectionCallback(const ConnectionCallback& cb) {connectionCallback_ = cb;}
     void setMessageCallback(const MessageCallback& cb) {messageCallback_ = cb;}
     void setWriteCompleteCallback(const WriteCompleteCallback& cb) {writeCompleteCallback_ = cb;}
+    void setCloseCallback(const CloseCallback& cb) { closeCallback_ = cb; }
 
     //设置底层subloop的个数
     void setThreadNum(int numThreads);
@@ -58,6 +60,7 @@ private:
     ConnectionCallback connectionCallback_;//有新连接时的回调
     MessageCallback messageCallback_;//有读写消息时的回调
     WriteCompleteCallback writeCompleteCallback_;//消息发送完成以后的回调
+    CloseCallback closeCallback_;
 
     ThreadInitCallback threadInitCallback_;//loop线程初始化的回调
     std::atomic_int shared_;
