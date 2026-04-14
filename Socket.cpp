@@ -7,6 +7,8 @@
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <strings.h>
+#include <cerrno> 
+#include <cstring> 
 
 Socket::~Socket()
 {
@@ -15,9 +17,9 @@ Socket::~Socket()
 
 void Socket::bindAddress(const InetAddress& Localaddr)
 {
-    if(::bind(sockfd_, (sockaddr*)Localaddr.getSockAddr(), sizeof(sockaddr_in) ) != 0 );
+    if(::bind(sockfd_, (sockaddr*)Localaddr.getSockAddr(), sizeof(sockaddr_in) ) != 0 )
     {
-        LOG_FATAL("bind sockfd:%d fail \n", sockfd_);
+        LOG_FATAL("bind sockfd:%d fail: %s (errno=%d)\n", sockfd_, strerror(errno), errno);
     }
 }
 
