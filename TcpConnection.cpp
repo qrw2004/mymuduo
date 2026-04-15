@@ -35,7 +35,7 @@ TcpConnection::TcpConnection(EventLoop* loop, const std::string &nameArg, int so
     {
         //下面给channel设置相应的回调函数，poller给channel通知感兴趣的事件发生了，channel会回调相应的操作函数
         channel_->setReadCallback(std::bind(&TcpConnection::handleRead, this, std::placeholders::_1));
-        channel_->setReadCallback(std::bind(&TcpConnection::handleWrite, this));
+        channel_->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
         channel_->setCloseCallback(std::bind(&TcpConnection::handleClose, this));
         channel_->setErrorCallback(std::bind(&TcpConnection::handleError, this));
 

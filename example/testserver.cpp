@@ -48,8 +48,8 @@ private:
         conn->shutdown();//关闭写端  EPOLLHUP-》closeCallback_
     }
 
-    EventLoop* loop_;
     TcpServer server_;
+    EventLoop* loop_;
 };
 
 
